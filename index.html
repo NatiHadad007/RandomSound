@@ -57,7 +57,13 @@
     <div class="container">
       <h2>Random MP3 Player</h2>
 
-      <input type="file" id="fileInput" accept="audio/mp3" multiple />
+      <input
+        type="file"
+        id="fileInput"
+        accept="audio/*"
+        multiple
+        capture="filesystem"
+      />
 
       <label>
         זמן בדיקה (שניות):
