@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Random MP3 Player</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        width: 320px;
+        text-align: center;
+      }
+
+      input[type="file"] {
+        margin-bottom: 15px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      button {
+        margin-top: 15px;
+        padding: 10px;
+        width: 100%;
+        border: none;
+        border-radius: 6px;
+        background: #4caf50;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      button.stop {
+        background: #f44336;
+      }
+
+      .info {
+        margin-top: 10px;
+        font-size: 14px;
+        opacity: 0.85;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Random MP3 Player</h2>
+
+      <input type="file" id="fileInput" accept="audio/mp3" multiple />
+
+      <label>
+        זמן בדיקה (שניות):
+        <span id="secondsValue">5</span>
+      </label>
+      <input type="range" min="1" max="12" value="5" id="secondsSlider" />
+
+      <button id="startBtn">התחל</button>
+      <button id="stopBtn" class="stop">עצור</button>
+
+      <div class="info" id="log"></div>
+    </div>
+
+    <script>
+      const TARGET_NUMBER = 7;
+      const RANDOM_MIN = 1;
+      const RANDOM_MAX = 10;
+
+      let audioFiles = [];
+      let currentAudio = null;
+      let intervalId = null;
+      let isPlaying = false;
+
+      const fileInput = document.getElementById("fileInput");
+      const slider = document.getElementById("secondsSlider");
+      const secondsValue = document.getElementById("secondsValue");
+      const log = document.getElementById("log");
+
+      secondsValue.textContent = slider.value;
+
+      slider.addEventListener("input", () => {
+        secondsValue.textContent = slider.value;
+      });
+
+      fileInput.addEventListener("change", () => {
+        audioFiles = Array.from(fileInput.files);
+      });
+
+      function startInterval() {
+        const seconds = Number(slider.value) * 1000;
+
+        intervalId = setInterval(() => {
+          if (isPlaying) return;
+
+          const randomNumber =
+            Math.floor(Math.random() * (RANDOM_MAX - RANDOM_MIN + 1)) +
+            RANDOM_MIN;
+
+          log.textContent = `הוגרל מספר: ${randomNumber}`;
+
+          if (randomNumber === TARGET_NUMBER) {
+            log.textContent += " → מנגן שיר 🎵";
+            playRandomAudio();
+          }
+        }, seconds);
+      }
+
+      function playRandomAudio() {
+        if (audioFiles.length === 0) return;
+
+        clearInterval(intervalId);
+        intervalId = null;
+        isPlaying = true;
+
+        const randomIndex = Math.floor(Math.random() * audioFiles.length);
+        const file = audioFiles[randomIndex];
+
+        currentAudio = new Audio(URL.createObjectURL(file));
+        currentAudio.play();
+
+        currentAudio.onended = () => {
+          isPlaying = false;
+          log.textContent = "השיר הסתיים – ממשיכים בהגרלות 🎲";
+          startInterval();
+        };
+      }
+
+      function start() {
+        stop();
+        startInterval();
+      }
+
+      function stop() {
+        if (intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          currentAudio = null;
+        }
+
+        isPlaying = false;
+        log.textContent = "";
+      }
+
+      document.getElementById("startBtn").addEventListener("click", start);
+      document.getElementById("stopBtn").addEventListener("click", stop);
+    </script>
+  </body>
+</html>
